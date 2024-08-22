@@ -4,7 +4,20 @@ import (
 	"math/rand"
 	"strconv"
 	"strings"
+	"unicode"
 )
+
+// Checks if a string contains only words
+// If yes, returns true
+// Else returns false
+func wordChecker(wordToCheck string) bool {
+	for _, r := range wordToCheck {
+		if !unicode.IsLetter(r) {
+			return false
+		}
+	}
+	return true
+}
 
 // Checks if a string is a number or not
 // If its a number, returns true

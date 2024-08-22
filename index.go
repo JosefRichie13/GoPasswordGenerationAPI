@@ -1,8 +1,8 @@
 package main
 
 import (
-	_ "fmt"
 	"math/rand"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,6 +12,7 @@ func main() {
 	request := gin.Default()
 	request.GET("/", landingPage)
 	request.GET("/generateAPassword", generateAPassword)
+	request.GET("/generateLeetPassword", generateALeetPassword)
 	request.Run(":8083")
 
 }
@@ -20,6 +21,7 @@ func landingPage(c *gin.Context) {
 	c.JSON(200, "Hello, Welcome to Password Generation API")
 }
 
+// Function to generate a password
 func generateAPassword(c *gin.Context) {
 
 	// We are specifying 4 query parameters, capLetters, smallLetters, numbers, specialChar from the API.
@@ -57,4 +59,56 @@ func generateAPassword(c *gin.Context) {
 
 	// Return the shuffled string as a password
 	c.JSON(200, gin.H{"password": string(shuff)})
+}
+
+// Function to generate a Leet Password
+func generateALeetPassword(c *gin.Context) {
+
+	// Defining a map of Leets
+	leetCharacterMap := map[string]string{"A": "@", "B": "8", "C": "{", "D": "[)", "E": "3", "F": "|=", "G": "6", "H": "[-]", "I": "!", "J": "._|", "K": "|<", "L": "1",
+		"M": "|V|", "N": "|^|", "O": "0", "P": "9", "Q": "(_,)", "R": "12", "S": "5", "T": "7", "U": "|_|", "V": "\\//", "W": "|_|_|",
+		"X": "><", "Y": "Y", "Z": "2"}
+
+	// Getting the word from the API
+	word := c.Query("word")
+
+	// Checking if the word is atleast 4 characters long. If not, reject with 400
+	if len(word) < 4 {
+		c.JSON(400, gin.H{"status": "Please provide atleast 4 letters"})
+		return
+	}
+
+	// Checking if the word is empty. If its empty, reject with 400
+	if word == "" {
+		c.JSON(400, gin.H{"status": "Please provide all required parameters"})
+		return
+	}
+
+	// Checking if the word contains any numbers or special characters. If it contains any of it, reject with 400
+	if !wordChecker(word) {
+		c.JSON(400, gin.H{"status": "Please provide only Alphabets, no numbers, special characters, spaces"})
+		return
+	}
+
+	// Capitalizing the word
+	capitalizedWord := strings.ToUpper(word)
+
+	// Splliting the word into a string array
+	splitWord := strings.Split(capitalizedWord, "")
+
+	// Defining an empty slice to hold the leeted characters
+	leetMapSlice := []string{}
+
+	// Loop through the string array and convert all the characters to leet, except the 1st and the last
+	for point := 1; point < len(splitWord)-1; point++ {
+		leetedCharMap := leetCharacterMap[splitWord[point]]
+		leetMapSlice = append(leetMapSlice, leetedCharMap)
+	}
+
+	// Putting it altogether
+	generatedLeetPassword := splitWord[0] + strings.Join(leetMapSlice, "") + splitWord[len(splitWord)-1]
+
+	// Return the Leeted password
+	c.JSON(200, gin.H{"inputPassword": word, "leetPassword": generatedLeetPassword})
+
 }
