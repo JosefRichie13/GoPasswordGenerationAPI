@@ -22,35 +22,41 @@ func landingPage(c *gin.Context) {
 	c.JSON(200, "Hello, Welcome to Password Generation API")
 }
 
+// Defining the Query Param body using a struct. This will accept the '?capLetters=<X>&smallLetters=<X>&numbers=<X>&specialChars=<X>' query params from the URL
+type PasswordParameters struct {
+	CapLetters   string `form:"capLetters" binding:"required"`
+	SmallLetters string `form:"smallLetters" binding:"required"`
+	Numbers      string `form:"numbers" binding:"required"`
+	SpecialChars string `form:"specialChars" binding:"required"`
+}
+
 // Function to generate a password
 func generateAPassword(c *gin.Context) {
 
-	// We are specifying 4 query parameters, capLetters, smallLetters, numbers, specialChar from the API.
-	noOfCapLetters := c.Query("capLetters")
-	noOfSmallLetters := c.Query("smallLetters")
-	noOfNumbers := c.Query("numbers")
-	noOfSpecialChar := c.Query("specialChar")
+	// Creating an instance of the struct, PasswordParameters
+	var passwordParameters PasswordParameters
 
-	// Checking if any query param is empty. If any one is empty, reject with 400
-	if noOfCapLetters == "" || noOfSmallLetters == "" || noOfNumbers == "" || noOfSpecialChar == "" {
-		c.JSON(400, gin.H{"status": "Please provide all required parameters"})
+	// Bind to the struct's members. If any member is invalid, binding does not happen and an error will be returned. Then its rejected with 400
+	if c.Bind(&passwordParameters) != nil {
+		c.JSON(400, gin.H{"status": "Incorrect parameters, please provide all required parameters"})
 		return
 	}
 
 	// Checking if any query param is equal to 0. If any one is 0, reject with 400
-	if noOfCapLetters == "0" || noOfSmallLetters == "0" || noOfNumbers == "0" || noOfSpecialChar == "0" {
-		c.JSON(400, gin.H{"status": "All parameters should be above 0"})
+	if passwordParameters.CapLetters == "0" || passwordParameters.SmallLetters == "0" || passwordParameters.Numbers == "0" || passwordParameters.SpecialChars == "0" {
+		c.JSON(400, gin.H{"status": "Incorrect parameters, all parameters should be above 0"})
 		return
 	}
 
 	// Checking if any query param are whole numbers. If any one is not, reject with 400
-	if !checkForNumber(noOfCapLetters) || !checkForNumber(noOfSmallLetters) || !checkForNumber(noOfNumbers) || !checkForNumber(noOfSpecialChar) {
+	if !checkForNumber(passwordParameters.CapLetters) || !checkForNumber(passwordParameters.SmallLetters) || !checkForNumber(passwordParameters.Numbers) || !checkForNumber(passwordParameters.SpecialChars) {
 		c.JSON(400, gin.H{"status": "All required parameters should be whole numbers"})
 		return
 	}
 
 	// Generate a string using 4 functions
-	generatedPwd := getRandomCapitalLetters(noOfCapLetters) + getRandomSmallLetters(noOfSmallLetters) + getRandomNumbers(noOfNumbers) + getRandomSpecialChar(noOfSpecialChar)
+	generatedPwd := getRandomCapitalLetters(passwordParameters.CapLetters) + getRandomSmallLetters(passwordParameters.SmallLetters) +
+		getRandomNumbers(passwordParameters.Numbers) + getRandomSpecialChar(passwordParameters.SpecialChars)
 
 	// Shuffle the generated string
 	shuff := []rune(generatedPwd)
