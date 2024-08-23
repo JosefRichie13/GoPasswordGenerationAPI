@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "fmt"
 	"math/rand"
 	"strings"
 
@@ -61,6 +62,11 @@ func generateAPassword(c *gin.Context) {
 	c.JSON(200, gin.H{"password": string(shuff)})
 }
 
+// Defining the Query Param body using a struct. This will accept the '?word=<QWERTY>' query param from the URL
+type WordToConvert struct {
+	Word string `form:"word" binding:"required"`
+}
+
 // Function to generate a Leet Password
 func generateALeetPassword(c *gin.Context) {
 
@@ -69,29 +75,29 @@ func generateALeetPassword(c *gin.Context) {
 		"M": "|V|", "N": "|^|", "O": "0", "P": "9", "Q": "(_,)", "R": "12", "S": "5", "T": "7", "U": "|_|", "V": "\\//", "W": "|_|_|",
 		"X": "><", "Y": "Y", "Z": "2"}
 
-	// Getting the word from the API
-	word := c.Query("word")
+	// Creating an instance of the struct, WordToConvert
+	var wordToConvert WordToConvert
 
-	// Checking if the word is atleast 4 characters long. If not, reject with 400
-	if len(word) < 4 {
-		c.JSON(400, gin.H{"status": "Please provide atleast 4 letters"})
-		return
-	}
-
-	// Checking if the word is empty. If its empty, reject with 400
-	if word == "" {
+	// Bind to the struct's members. If any member is invalid, binding does not happen and an error will be returned. Then its rejected with 400
+	if c.Bind(&wordToConvert) != nil {
 		c.JSON(400, gin.H{"status": "Please provide all required parameters"})
 		return
 	}
 
+	// Checking if the word is atleast 4 characters long. If not, reject with 400
+	if len(wordToConvert.Word) < 4 {
+		c.JSON(400, gin.H{"status": "Please provide atleast 4 letters"})
+		return
+	}
+
 	// Checking if the word contains any numbers or special characters. If it contains any of it, reject with 400
-	if !wordChecker(word) {
-		c.JSON(400, gin.H{"status": "Please provide only Alphabets, no numbers, special characters, spaces"})
+	if !wordChecker(wordToConvert.Word) {
+		c.JSON(400, gin.H{"status": "Please provide only Alphabets, no numbers, special characters or spaces"})
 		return
 	}
 
 	// Capitalizing the word
-	capitalizedWord := strings.ToUpper(word)
+	capitalizedWord := strings.ToUpper(wordToConvert.Word)
 
 	// Splliting the word into a string array
 	splitWord := strings.Split(capitalizedWord, "")
@@ -109,6 +115,6 @@ func generateALeetPassword(c *gin.Context) {
 	generatedLeetPassword := splitWord[0] + strings.Join(leetMapSlice, "") + splitWord[len(splitWord)-1]
 
 	// Return the Leeted password
-	c.JSON(200, gin.H{"inputPassword": word, "leetPassword": generatedLeetPassword})
+	c.JSON(200, gin.H{"inputPassword": wordToConvert.Word, "leetPassword": generatedLeetPassword})
 
 }
