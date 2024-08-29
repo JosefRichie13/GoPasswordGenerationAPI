@@ -1,4 +1,4 @@
-# Backend for a Password Generation App Gin Gonic and Go
+# Backend for a Password Generation App using Gin Gonic and Go
 
 This repo has the code for a Password Generation App Backend. 
 
