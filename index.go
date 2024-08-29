@@ -19,7 +19,8 @@ func main() {
 }
 
 func landingPage(c *gin.Context) {
-	c.JSON(200, "Hello, Welcome to Password Generation API")
+	c.File("PasswordAPI.html")
+	//c.JSON(200, "Hello, Welcome to Password Generation API")
 }
 
 // Defining the Query Param body using a struct. This will accept the '?capLetters=<X>&smallLetters=<X>&numbers=<X>&specialChars=<X>' query params from the URL
